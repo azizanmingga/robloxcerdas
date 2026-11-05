@@ -1,0 +1,2776 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Roblox Cerdas 3D - Semesta Edukasi Nusantara</title>
+  
+  <!-- Font Google Nunito: Ramah, Modern, dan Jelas untuk Edukasi Anak & PID -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Three.js CDN (r128) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #4F46E5;
+      --primary-dark: #3730A3;
+      --secondary: #06B6D4;
+      --accent: #F59E0B;
+      --success: #10B981;
+      --danger: #EF4444;
+      --bg-dark: #0f172a;
+      --hud-glass: rgba(15, 23, 42, 0.82);
+      --hud-border: rgba(255, 255, 255, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      font-family: 'Nunito', sans-serif;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #0b0f19;
+      color: #fff;
+    }
+
+    #game-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      display: block;
+    }
+
+    /* ================= HUD ================= */
+    #hud {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px;
+    }
+
+    .interactive {
+      pointer-events: auto;
+    }
+
+    .glass-card {
+      background: var(--hud-glass);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--hud-border);
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Top HUD Bar */
+    .hud-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .player-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 18px;
+    }
+
+    .avatar-badge {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      border: 2px solid #fff;
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.6);
+    }
+
+    .player-info {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .player-name-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .player-name {
+      font-weight: 800;
+      font-size: 15px;
+      letter-spacing: 0.3px;
+    }
+
+    .level-tag {
+      background: #F59E0B;
+      color: #78350F;
+      font-weight: 900;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      text-transform: uppercase;
+    }
+
+    .xp-bar-outer {
+      width: 135px;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .xp-bar-inner {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #10B981, #34D399);
+      transition: width 0.4s ease;
+      border-radius: 10px;
+    }
+
+    .top-right-group {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+    }
+
+    .hud-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .coin-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      font-weight: 800;
+      color: #FBBF24;
+      font-size: 15px;
+    }
+
+    .coin-icon {
+      width: 22px;
+      height: 22px;
+      background: radial-gradient(circle, #FDE68A 20%, #F59E0B 90%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #78350F;
+      font-weight: 900;
+      font-size: 12px;
+      box-shadow: 0 0 8px #F59E0B;
+    }
+
+    .icon-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      border: 1px solid var(--hud-border);
+      background: var(--hud-glass);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(8px);
+    }
+
+    .icon-btn:hover {
+      transform: translateY(-2px);
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .icon-btn:active {
+      transform: scale(0.92);
+    }
+
+    #radar-container {
+      width: 106px;
+      height: 106px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      background: rgba(15, 23, 42, 0.88);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+    }
+
+    #radar-canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Interaction Prompt */
+    #interact-prompt {
+      position: absolute;
+      bottom: 110px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      padding: 12px 24px;
+      border-radius: 30px;
+      background: rgba(79, 70, 229, 0.95);
+      border: 2px solid #A5B4FC;
+      color: #fff;
+      font-weight: 800;
+      font-size: 15px;
+      box-shadow: 0 8px 25px rgba(79, 70, 229, 0.6);
+      opacity: 0;
+      transition: all 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+      pointer-events: auto;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 20;
+    }
+
+    #interact-prompt.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .key-badge {
+      background: #fff;
+      color: var(--primary-dark);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 900;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Mobile / Touch Controls (IFP & Smartphone) */
+    #mobile-controls {
+      display: none;
+      width: 100%;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding-bottom: 24px;
+    }
+
+    #joystick-zone {
+      width: 130px;
+      height: 130px;
+      position: relative;
+      touch-action: none;
+    }
+
+    #joystick-base {
+      width: 110px;
+      height: 110px;
+      background: rgba(255, 255, 255, 0.15);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      backdrop-filter: blur(6px);
+    }
+
+    #joystick-handle {
+      width: 48px;
+      height: 48px;
+      background: radial-gradient(circle, #818CF8, #4F46E5);
+      border-radius: 50%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      pointer-events: none;
+    }
+
+    .mobile-buttons {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      margin-right: 8px;
+    }
+
+    .touch-btn {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 800;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.35);
+      transition: transform 0.1s;
+    }
+
+    .touch-btn:active {
+      transform: scale(0.92);
+      background: rgba(255, 255, 255, 0.35);
+    }
+
+    .touch-btn-action {
+      background: linear-gradient(135deg, #10B981, #059669);
+      border-color: #6EE7B7;
+    }
+
+    .touch-btn-jump {
+      background: linear-gradient(135deg, #F59E0B, #D97706);
+      border-color: #FCD34D;
+    }
+
+    .touch-btn-sub {
+      font-size: 9px;
+      font-weight: 800;
+      opacity: 0.85;
+      margin-top: -2px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Footnote */
+    .hud-footnote {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.6);
+      letter-spacing: 0.4px;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+      pointer-events: auto;
+      white-space: nowrap;
+    }
+
+    .hud-footnote span {
+      color: #FBBF24;
+      font-weight: 800;
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(5, 10, 25, 0.82);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-window {
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 22px;
+      width: 100%;
+      max-width: 650px;
+      max-height: 88vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      transform: scale(0.95);
+      transition: transform 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+
+    .modal-overlay.active .modal-window {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .modal-icon {
+      font-size: 28px;
+    }
+
+    .modal-title {
+      font-size: 19px;
+      font-weight: 900;
+      letter-spacing: 0.3px;
+    }
+
+    .modal-subtitle {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    .btn-close {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #cbd5e1;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-close:hover {
+      background: rgba(255, 255, 255, 0.25);
+      color: #fff;
+    }
+
+    .modal-body {
+      padding: 22px 24px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    /* Tabs */
+    .tab-bar {
+      display: flex;
+      gap: 8px;
+      background: #0f172a;
+      padding: 6px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      font-weight: 800;
+      font-size: 13px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+    }
+
+    /* Kuis UI */
+    .quiz-stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 12px 18px;
+      border-radius: 12px;
+      margin-bottom: 18px;
+      font-weight: 800;
+    }
+
+    .hearts {
+      color: #EF4444;
+      font-size: 18px;
+      letter-spacing: 2px;
+    }
+
+    .timer-badge {
+      background: #334155;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .timer-badge.warning {
+      background: #DC2626;
+      animation: pulse 1s infinite;
+    }
+
+    .combo-badge {
+      color: #F59E0B;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .question-box {
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1.5;
+      margin-bottom: 18px;
+      color: #f8fafc;
+    }
+
+    .answers-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .answer-btn {
+      background: #334155;
+      border: 2px solid transparent;
+      padding: 12px 16px;
+      border-radius: 12px;
+      color: #f1f5f9;
+      font-size: 14px;
+      font-weight: 700;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .answer-btn:hover:not(:disabled) {
+      border-color: #6366f1;
+      background: #3e4c63;
+      transform: translateX(4px);
+    }
+
+    .answer-btn.correct {
+      background: #065F46 !important;
+      border-color: #10B981 !important;
+      color: #A7F3D0;
+    }
+
+    .answer-btn.wrong {
+      background: #881337 !important;
+      border-color: #F43F5E !important;
+      color: #FECDD3;
+    }
+
+    .explanation-card {
+      background: rgba(30, 41, 59, 0.9);
+      border-left: 4px solid var(--secondary);
+      padding: 14px 18px;
+      border-radius: 0 12px 12px 0;
+      margin-top: 14px;
+      font-size: 13px;
+      line-height: 1.5;
+      display: none;
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, #4F46E5, #6366F1);
+      color: #fff;
+      border: none;
+      padding: 12px 22px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      width: 100%;
+      box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+      transition: transform 0.15s;
+    }
+
+    .primary-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .primary-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* Lemari Wardrobe */
+    .wardrobe-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .wardrobe-item {
+      background: #0f172a;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 14px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .wardrobe-item:hover {
+      border-color: #818CF8;
+      transform: translateY(-2px);
+    }
+
+    .wardrobe-item.active {
+      border-color: #10B981;
+      background: rgba(16, 185, 129, 0.12);
+    }
+
+    .wardrobe-preview {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .wardrobe-label {
+      font-weight: 800;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    /* Papan Misi / Quest */
+    .quest-item {
+      background: #0f172a;
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      gap: 10px;
+    }
+
+    .quest-desc {
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .quest-reward {
+      font-size: 12px;
+      color: #FBBF24;
+      font-weight: 800;
+    }
+
+    .claim-btn {
+      background: #10B981;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .claim-btn:disabled {
+      background: #334155;
+      color: #64748b;
+      cursor: not-allowed;
+    }
+
+    /* Mode Guru Form & JSON Import */
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 5px;
+      color: #cbd5e1;
+    }
+
+    .form-input, .form-textarea, .form-select {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+      border-color: #6366f1;
+    }
+
+    /* Floating Toast / Notification */
+    #toast-banner {
+      position: absolute;
+      top: 75px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-30px);
+      background: rgba(16, 185, 129, 0.95);
+      color: #fff;
+      padding: 10px 22px;
+      border-radius: 30px;
+      font-weight: 800;
+      font-size: 13px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #toast-banner.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+
+    @media (max-width: 820px) {
+      #mobile-controls {
+        display: flex;
+      }
+      .player-name {
+        font-size: 13px;
+      }
+      .xp-bar-outer {
+        width: 80px;
+      }
+      #interact-prompt {
+        bottom: 140px;
+      }
+      .hud-footnote {
+        font-size: 9px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- WebGL Canvas 3D -->
+  <canvas id="game-canvas"></canvas>
+
+  <!-- Notifikasi Toast -->
+  <div id="toast-banner">
+    <span id="toast-icon">✨</span>
+    <span id="toast-msg">Pemberitahuan</span>
+  </div>
+
+  <!-- HUD Layer -->
+  <div id="hud">
+    <!-- Top HUD Bar -->
+    <div class="hud-top">
+      <div class="glass-card player-card interactive">
+        <div class="avatar-badge" id="hud-avatar-icon">🎓</div>
+        <div class="player-info">
+          <div class="player-name-row">
+            <span class="player-name" id="hud-name">Pelajar Cerdas</span>
+            <span class="level-tag" id="hud-level">LVL 1</span>
+          </div>
+          <div class="xp-bar-outer">
+            <div class="xp-bar-inner" id="hud-xp-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="top-right-group interactive">
+        <div class="hud-actions">
+          <div class="glass-card coin-badge">
+            <div class="coin-icon">¢</div>
+            <span id="hud-coins">0</span>
+          </div>
+          <button class="icon-btn" id="btn-wardrobe" title="Lemari Gaya & Kostum">👕</button>
+          <button class="icon-btn" id="btn-quests" title="Papan Misi Edukasi">📜</button>
+          <button class="icon-btn" id="btn-teacher" title="Mode Guru / Kurikulum">👨‍🏫</button>
+          <button class="icon-btn" id="btn-pause" title="Jeda Permainan">⏸️</button>
+        </div>
+        <!-- 2D Minimap Radar -->
+        <div id="radar-container">
+          <canvas id="radar-canvas" width="106" height="106"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tombol Interaksi Muncul Saat Dekat Objek -->
+    <div id="interact-prompt" onclick="triggerCurrentInteraction()">
+      <span class="key-badge">E</span>
+      <span id="interact-text">Masuk Gedung Belajar</span>
+    </div>
+
+    <!-- Kontrol Layar Sentuh Mobile / IFP -->
+    <div id="mobile-controls">
+      <div id="joystick-zone" class="interactive">
+        <div id="joystick-base">
+          <div id="joystick-handle"></div>
+        </div>
+      </div>
+      <div class="mobile-buttons interactive">
+        <div class="touch-btn touch-btn-jump" id="touch-jump">
+          <span>▲</span>
+          <span class="touch-btn-sub">LOMPAT (A)</span>
+        </div>
+        <div class="touch-btn touch-btn-action" id="touch-interact">
+          <span>E</span>
+          <span class="touch-btn-sub">AKSI (E)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footnote Pengembang -->
+    <div class="hud-footnote">
+      Roblox Cerdas 3D &bull; Dikembangkan oleh <span>Mingga Ria Hadi</span> &bull; Semesta Belajar Nusantara
+    </div>
+  </div>
+
+  <!-- MODAL GEDUNG MAPEL & KUIS -->
+  <div class="modal-overlay" id="modal-building">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-icon" id="building-modal-icon">🏛️</div>
+          <div>
+            <div class="modal-title" id="building-modal-title">Gedung Pelajaran</div>
+            <div class="modal-subtitle">Pusat Studi Interaktif Roblox Cerdas 3D</div>
+          </div>
+        </div>
+        <button class="btn-close" onclick="closeModal('modal-building')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="tab-bar">
+          <button class="tab-btn active" id="tab-btn-materi" onclick="switchBuildingTab('materi')">📖 Ruang Materi</button>
+          <button class="tab-btn" id="tab-btn-kuis" onclick="switchBuildingTab('kuis')">✏️ Ujian Kuis</button>
+        </div>
+
+        <!-- Konten Tab 1: Materi -->
+        <div id="tab-content-materi">
+          <div style="background: rgba(15,23,42,0.7); padding: 18px; border-radius: 12px; margin-bottom: 18px; line-height: 1.6; font-size: 14px;" id="materi-text">
+            Materi pelajaran akan dimuat di sini...
+          </div>
+          <button class="primary-btn" onclick="startBuildingQuiz()">Mulai Latihan Kuis!</button>
+        </div>
+
+        <!-- Konten Tab 2: Kuis -->
+        <div id="tab-content-kuis" style="display: none;">
+          <div class="quiz-stats">
+            <div class="hearts" id="quiz-hearts">❤❤❤</div>
+            <div class="timer-badge" id="quiz-timer">⏱️ 30s</div>
+            <div class="combo-badge" id="quiz-combo">Combo: x1 🔥</div>
+          </div>
+          <div class="question-box" id="quiz-question">Pertanyaan kuis akan dimuat di sini...</div>
+          <div class="answers-grid" id="quiz-options"></div>
+          
+          <div class="explanation-card" id="quiz-explanation">
+            <strong>Penjelasan Edukatif:</strong>
+            <p id="quiz-explanation-text" style="margin-top: 4px;"></p>
+          </div>
+          
+          <button class="primary-btn" id="quiz-next-btn" style="margin-top: 14px; display: none;" onclick="nextQuestion()">Pertanyaan Selanjutnya ➔</button>
+          
+          <!-- Layar Hasil Kuis -->
+          <div id="quiz-summary" style="display: none; text-align: center; padding: 18px 0;">
+            <h2 style="font-size: 24px; font-weight: 900; margin-bottom: 6px;">Ujian Selesai! 🎉</h2>
+            <p id="quiz-result-score" style="font-size: 16px; color: #94a3b8; margin-bottom: 18px;">Skor Kamu: 100/100</p>
+            <div style="display: flex; justify-content: center; gap: 16px; margin-bottom: 22px;">
+              <div style="background: #0f172a; padding: 12px 18px; border-radius: 12px;">
+                <span style="color:#FBBF24; font-weight: 900; font-size: 18px;" id="quiz-reward-coins">+50</span>
+                <div style="font-size: 11px; color:#94a3b8;">KOIN DIDAPAT</div>
+              </div>
+              <div style="background: #0f172a; padding: 12px 18px; border-radius: 12px;">
+                <span style="color:#34D399; font-weight: 900; font-size: 18px;" id="quiz-reward-xp">+100</span>
+                <div style="font-size: 11px; color:#94a3b8;">XP DITERIMA</div>
+              </div>
+            </div>
+            <button class="primary-btn" onclick="closeModal('modal-building')">Selesai & Keluar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL LEMARI GAYA (WARDROBE) -->
+  <div class="modal-overlay" id="modal-wardrobe">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-icon">👕</div>
+          <div>
+            <div class="modal-title">Lemari Gaya Nusantara</div>
+            <div class="modal-subtitle">Kustomisasi Seragam, Rambut & Aksesoris Karakter</div>
+          </div>
+        </div>
+        <button class="btn-close" onclick="closeModal('modal-wardrobe')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <h4 style="margin-bottom: 10px; font-weight: 800; color: #cbd5e1; font-size: 13px;">Pilihan Seragam Sekolah & Budaya:</h4>
+        <div class="wardrobe-grid" id="outfit-options"></div>
+
+        <h4 style="margin: 16px 0 10px 0; font-weight: 800; color: #cbd5e1; font-size: 13px;">Pilihan Aksesoris:</h4>
+        <div class="wardrobe-grid" id="accessory-options"></div>
+
+        <h4 style="margin: 16px 0 10px 0; font-weight: 800; color: #cbd5e1; font-size: 13px;">Pilihan Warna Rambut:</h4>
+        <div class="wardrobe-grid" id="hair-color-options"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PAPAN MISI (QUESTS) -->
+  <div class="modal-overlay" id="modal-quests">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-icon">📜</div>
+          <div>
+            <div class="modal-title">Papan Misi Pelajar Cerdas</div>
+            <div class="modal-subtitle">Selesaikan Tugas Eksplorasi & Dapatkan Hadiah</div>
+          </div>
+        </div>
+        <button class="btn-close" onclick="closeModal('modal-quests')">&times;</button>
+      </div>
+      <div class="modal-body" id="quest-list-container">
+        <!-- Render Misi Dinamis -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL MODE GURU (TEACHER DASHBOARD) -->
+  <div class="modal-overlay" id="modal-teacher">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-icon">👨‍🏫</div>
+          <div>
+            <div class="modal-title">Mode Guru & Manajemen Kurikulum</div>
+            <div class="modal-subtitle">Kelola dan Tambah Paket Soal Kuis Sekolah</div>
+          </div>
+        </div>
+        <button class="btn-close" onclick="closeModal('modal-teacher')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="tab-bar">
+          <button class="tab-btn active" id="tab-btn-teacher-form" onclick="switchTeacherTab('form')">Form Tambah Soal</button>
+          <button class="tab-btn" id="tab-btn-teacher-json" onclick="switchTeacherTab('json')">Import / Export JSON</button>
+        </div>
+
+        <div id="teacher-tab-form">
+          <div class="form-group">
+            <label>Pilih Mata Pelajaran:</label>
+            <select class="form-select" id="teacher-mapel">
+              <option value="matematika">Matematika</option>
+              <option value="ipa">IPA (Sains)</option>
+              <option value="indo">Bahasa Indonesia</option>
+              <option value="inggris">Bahasa Inggris</option>
+              <option value="ips">IPS & Budaya</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Pertanyaan Soal Baru:</label>
+            <input type="text" class="form-input" id="teacher-q" placeholder="Contoh: Berapakah hasil 12 x 8?">
+          </div>
+          <div class="form-group">
+            <label>Pilihan Jawaban (A, B, C, D):</label>
+            <input type="text" class="form-input" id="teacher-opt0" placeholder="Pilihan A" style="margin-bottom:6px;">
+            <input type="text" class="form-input" id="teacher-opt1" placeholder="Pilihan B" style="margin-bottom:6px;">
+            <input type="text" class="form-input" id="teacher-opt2" placeholder="Pilihan C" style="margin-bottom:6px;">
+            <input type="text" class="form-input" id="teacher-opt3" placeholder="Pilihan D">
+          </div>
+          <div class="form-group">
+            <label>Kunci Jawaban Benar:</label>
+            <select class="form-select" id="teacher-correct">
+              <option value="0">Pilihan A</option>
+              <option value="1">Pilihan B</option>
+              <option value="2">Pilihan C</option>
+              <option value="3">Pilihan D</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Pembahasan Edukatif:</label>
+            <textarea class="form-textarea" rows="2" id="teacher-explain" placeholder="Tuliskan penjelasan logis untuk memandu anak..."></textarea>
+          </div>
+          <button class="primary-btn" onclick="saveCustomQuestion()">Simpan Soal ke Bank Data</button>
+        </div>
+
+        <div id="teacher-tab-json" style="display: none;">
+          <p style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">
+            Salin atau tempel paket kurikulum dalam format JSON standar (memuat <code>judul</code>, <code>mapel</code>, <code>materi</code>, dan <code>quizzes</code>):
+          </p>
+          <textarea class="form-textarea" rows="9" id="teacher-json-area" style="font-family: monospace; font-size: 11px;"></textarea>
+          <div style="display: flex; gap: 10px; margin-top: 12px;">
+            <button class="primary-btn" style="flex: 1; background: #0284C7;" onclick="exportCurriculumJSON()">Ekspor JSON Saat Ini</button>
+            <button class="primary-btn" style="flex: 1; background: #10B981;" onclick="importCurriculumJSON()">Impor & Terapkan JSON</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT LOGIKA UTAMA -->
+  <script>
+    /* =====================================================================
+       1. SYNTHESIZER AUDIO PROSEDURAL (Web Audio API Kustom)
+       ===================================================================== */
+    class ProceduralAudio {
+      constructor() {
+        this.ctx = null;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+      playJump() {
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(140, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(460, this.ctx.currentTime + 0.14);
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.14);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.15);
+      }
+      playCoin() {
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(987.77, now); // B5
+        osc.frequency.setValueAtTime(1318.51, now + 0.08); // E6
+        gain.gain.setValueAtTime(0.22, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.32);
+        osc.start(now);
+        osc.stop(now + 0.33);
+      }
+      playCorrect() {
+        this.init();
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C Major arpeggio
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          const t = this.ctx.currentTime + (idx * 0.06);
+          gain.gain.setValueAtTime(0.18, t);
+          gain.gain.exponentialRampToValueAtTime(0.01, t + 0.18);
+          osc.start(t);
+          osc.stop(t + 0.2);
+        });
+      }
+      playWrong() {
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.linearRampToValueAtTime(110, now + 0.22);
+        gain.gain.setValueAtTime(0.22, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.26);
+        osc.start(now);
+        osc.stop(now + 0.27);
+      }
+      playLevelUp() {
+        this.init();
+        const chord = [440, 554.37, 659.25, 880];
+        chord.forEach(freq => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.type = 'triangle';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.55);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.56);
+        });
+      }
+    }
+    const audio = new ProceduralAudio();
+
+    /* =====================================================================
+       2. DATABASE EDUKASI & SISTEM STATE LOKAL
+       ===================================================================== */
+    const defaultCurriculum = {
+      matematika: {
+        title: "Gedung Matematika",
+        icon: "📐",
+        color: 0xEF4444,
+        materi: "Matematika melatih logika berpikir sistematis! Rumus-rumus penting: Luas Persegi = sisi x sisi, Keliling Persegi = 4 x sisi. Luas Persegi Panjang = panjang x lebar. Perkalian bilangan bulat bertanda sama menghasilkan bilangan positif (+ x + = + dan - x - = +).",
+        quizzes: [
+          {
+            q: "Berapa hasil dari 14 x 5 + 30?",
+            options: ["100", "90", "110", "120"],
+            answer: 0,
+            explain: "14 dikali 5 menghasilkan 70. Kemudian 70 ditambah 30 sama dengan 100."
+          },
+          {
+            q: "Sebuah persegi memiliki sisi sepanjang 9 cm. Berapakah luasnya?",
+            options: ["36 cm²", "81 cm²", "18 cm²", "72 cm²"],
+            answer: 1,
+            explain: "Luas persegi = sisi x sisi = 9 cm x 9 cm = 81 cm²."
+          },
+          {
+            q: "Berapakah hasil dari (-7) + 16?",
+            options: ["-9", "9", "-23", "23"],
+            answer: 1,
+            explain: "Hutang 7 dibayar 16 menghasilkan sisa saldo positif 9."
+          }
+        ]
+      },
+      ipa: {
+        title: "Gedung IPA / Sains",
+        icon: "🔬",
+        color: 0x3B82F6,
+        materi: "Sains mengungkap keajaiban alam! Fotosintesis adalah proses tumbuhan hijau menghasilkan oksigen dan glukosa dengan bantuan klorofil dan cahaya matahari. Air (H2O) dan Karbon Dioksida (CO2) adalah bahan bakunya.",
+        quizzes: [
+          {
+            q: "Zat hijau daun yang menyerap cahaya saat fotosintesis disebut...",
+            options: ["Klorofil", "Stomata", "Floem", "Xilem"],
+            answer: 0,
+            explain: "Klorofil merupakan pigmen hijau yang menangkap radiasi sinar matahari untuk fotosintesis."
+          },
+          {
+            q: "Planet apakah yang memiliki urutan paling dekat dengan Matahari?",
+            options: ["Venus", "Bumi", "Merkurius", "Mars"],
+            answer: 2,
+            explain: "Merkurius berada pada orbit terdekat dari pusat tata surya kita yaitu Matahari."
+          },
+          {
+            q: "Perubahan wujud zat dari padat langsung menjadi gas disebut...",
+            options: ["Mencair", "Menyublim", "Mengembun", "Membeku"],
+            answer: 1,
+            explain: "Menyublim adalah perubahan fasa dari benda padat ke wujud gas tanpa melalui fasa cair terlebih dahulu."
+          }
+        ]
+      },
+      indo: {
+        title: "Gedung Bahasa Indonesia",
+        icon: "📖",
+        color: 0xF59E0B,
+        materi: "Bahasa Indonesia adalah pemersatu bangsa. Kalimat efektif berstruktur SPOK (Subjek, Predikat, Objek, Keterangan). Kata bersinonim memiliki kesamaan makna (contoh: pandai = pintar), sedangkan antonim adalah perlawanan kata.",
+        quizzes: [
+          {
+            q: "Sinonim kata 'CERDAS' dalam konteks akademis adalah...",
+            options: ["Pandai", "Malas", "Kuat", "Tangkas"],
+            answer: 0,
+            explain: "'Cerdas' dan 'Pandai' memiliki padanan arti yang serupa (bersinonim)."
+          },
+          {
+            q: "Manakah kalimat berikut yang memiliki pola SPOK lengkap?",
+            options: ["Ibu memasak di dapur.", "Budi membaca buku sains di perpustakaan.", "Burung berkicau merdu.", "Adik sedang tidur pulas."],
+            answer: 1,
+            explain: "Budi (S) membaca (P) buku sains (O) di perpustakaan (Keterangan Tempat)."
+          }
+        ]
+      },
+      inggris: {
+        title: "Gedung Bahasa Inggris",
+        icon: "🌍",
+        color: 0x8B5CF6,
+        materi: "Mastering English empowers global communication. Pay attention to subject-verb agreement: For singular pronouns (He, She, It), present simple verbs add -s or -es (e.g., 'He writes a story'). Always remember polite expressions like 'Excuse me' and 'Thank you'.",
+        quizzes: [
+          {
+            q: "What is the opposite (antonym) of the word 'ANCIENT'?",
+            options: ["Old", "Modern", "Historic", "Classic"],
+            answer: 1,
+            explain: "'Ancient' means very old, so its direct opposite is 'Modern' (modern/baru)."
+          },
+          {
+            q: "Choose the correct sentence in Simple Present Tense:",
+            options: ["She study hard everyday.", "She studies hard everyday.", "She studying hard everyday.", "She is study hard."],
+            answer: 1,
+            explain: "For third-person singular (She), the verb 'study' transforms into 'studies'."
+          }
+        ]
+      },
+      ips: {
+        title: "Gedung IPS & Budaya",
+        icon: "🏛️",
+        color: 0x10B981,
+        materi: "Indonesia adalah negara kepulauan agung dengan semboyan 'Bhinneka Tunggal Ika' (Berbeda-beda tetapi tetap satu jua). Negara kita dianugerahi ribuan pulau, ratusan bahasa daerah, serta peninggalan warisan dunia bersejarah.",
+        quizzes: [
+          {
+            q: "Semboyan 'Bhinneka Tunggal Ika' tercantum dalam kitab kuno karangan Mpu Tantular yang berjudul...",
+            options: ["Negarakertagama", "Sutasoma", "Mahabharata", "Arjunawiwaha"],
+            answer: 1,
+            explain: "Mpu Tantular menuliskan kalimat Bhinneka Tunggal Ika pada Kitab Kakawin Sutasoma zaman Majapahit."
+          },
+          {
+            q: "Monumen candi Buddha terbesar di dunia yang terletak di Jawa Tengah adalah...",
+            options: ["Candi Prambanan", "Candi Borobudur", "Candi Mendut", "Candi Sewu"],
+            answer: 1,
+            explain: "Candi Borobudur dibangun pada masa Dinasti Syailendra dan diakui sebagai warisan dunia UNESCO."
+          }
+        ]
+      }
+    };
+
+    let gameState = {
+      name: "Pelajar Cerdas",
+      level: 1,
+      xp: 0,
+      xpTarget: 100,
+      coins: 0,
+      uniform: "sd", // sd, smp, sma, pramuka, batik
+      accessory: "none", // none, cap, glasses
+      hairColor: "#3B2F2F",
+      booksCollected: 0,
+      talkedNpc: 0,
+      completedQuests: {},
+      curriculum: defaultCurriculum
+    };
+
+    function loadSavedState() {
+      const saved = localStorage.getItem("roblox_cerdas_state");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          gameState = { ...gameState, ...parsed };
+          if (!gameState.curriculum) gameState.curriculum = defaultCurriculum;
+        } catch (e) {
+          console.error("Gagal membaca save data:", e);
+        }
+      }
+      updateHUD();
+    }
+
+    function saveState() {
+      localStorage.setItem("roblox_cerdas_state", JSON.stringify(gameState));
+      updateHUD();
+    }
+
+    function addXP(amount) {
+      gameState.xp += amount;
+      while (gameState.xp >= gameState.xpTarget) {
+        gameState.xp -= gameState.xpTarget;
+        gameState.level++;
+        gameState.xpTarget = Math.floor(gameState.xpTarget * 1.35);
+        audio.playLevelUp();
+        showToast(`🎉 Naik Level! Kamu sekarang Level ${gameState.level}!`);
+      }
+      saveState();
+    }
+
+    function addCoins(amount) {
+      gameState.coins += amount;
+      saveState();
+    }
+
+    function showToast(msg, icon = "🌟") {
+      const banner = document.getElementById("toast-banner");
+      document.getElementById("toast-msg").innerText = msg;
+      document.getElementById("toast-icon").innerText = icon;
+      banner.classList.add("show");
+      setTimeout(() => banner.classList.remove("show"), 3200);
+    }
+
+    /* =====================================================================
+       3. ENGINE 3D THREE.JS & ENVIRONMENT DESIGN
+       ===================================================================== */
+    const canvas = document.getElementById('game-canvas');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x7DD3FC); // Langit tropis cerah
+    scene.fog = new THREE.FogExp2(0x7DD3FC, 0.014);
+
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    // Pencahayaan
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.68);
+    scene.add(ambientLight);
+
+    const sunLight = new THREE.DirectionalLight(0xfffaed, 0.95);
+    sunLight.position.set(45, 75, 35);
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.width = 2048;
+    sunLight.shadow.mapSize.height = 2048;
+    sunLight.shadow.camera.near = 0.5;
+    sunLight.shadow.camera.far = 190;
+    const shadowD = 70;
+    sunLight.shadow.camera.left = -shadowD;
+    sunLight.shadow.camera.right = shadowD;
+    sunLight.shadow.camera.top = shadowD;
+    sunLight.shadow.camera.bottom = -shadowD;
+    scene.add(sunLight);
+
+    const interactiveZones = [];
+    const animatedCollectibles = [];
+    const npcs = [];
+    const fountainDrops = [];
+
+    // Material dasar
+    const materials = {
+      grass: new THREE.MeshLambertMaterial({ color: 0x48BB78 }),
+      road: new THREE.MeshLambertMaterial({ color: 0x334155 }),
+      sidewalk: new THREE.MeshLambertMaterial({ color: 0xCBD5E1 }),
+      roadMarking: new THREE.MeshBasicMaterial({ color: 0xFFFFFF }),
+      fountainWater: new THREE.MeshLambertMaterial({ color: 0x38BDF8, transparent: true, opacity: 0.8 }),
+      trunk: new THREE.MeshLambertMaterial({ color: 0x78350F }),
+      leaves: new THREE.MeshLambertMaterial({ color: 0x15803D }),
+      gold: new THREE.MeshStandardMaterial({ color: 0xF59E0B, metalness: 0.85, roughness: 0.2 }),
+      book: new THREE.MeshStandardMaterial({ color: 0x6366F1, roughness: 0.35 })
+    };
+
+    // 3.1 Landasan Hijau & Jaringan Jalan Ber-Grid
+    const groundGeo = new THREE.PlaneGeometry(250, 250);
+    const groundMesh = new THREE.Mesh(groundGeo, materials.grass);
+    groundMesh.rotation.x = -Math.PI / 2;
+    groundMesh.receiveShadow = true;
+    scene.add(groundMesh);
+
+    function createRoadGrid() {
+      const roadGroup = new THREE.Group();
+      const roadW = 10;
+      
+      // Jalan Utama Melintang & Membujur
+      const r1 = new THREE.Mesh(new THREE.PlaneGeometry(roadW, 230), materials.road);
+      r1.rotation.x = -Math.PI / 2;
+      r1.position.y = 0.02;
+      r1.receiveShadow = true;
+      roadGroup.add(r1);
+
+      const r2 = new THREE.Mesh(new THREE.PlaneGeometry(230, roadW), materials.road);
+      r2.rotation.x = -Math.PI / 2;
+      r2.position.y = 0.02;
+      r2.receiveShadow = true;
+      roadGroup.add(r2);
+
+      // Trotoar Sidewalk
+      const swH = 0.16;
+      const swGeoX = new THREE.BoxGeometry(230, swH, 1.8);
+      const sw1 = new THREE.Mesh(swGeoX, materials.sidewalk);
+      sw1.position.set(0, swH/2, 5.9);
+      sw1.receiveShadow = true;
+      roadGroup.add(sw1);
+
+      const sw2 = sw1.clone();
+      sw2.position.set(0, swH/2, -5.9);
+      roadGroup.add(sw2);
+
+      const swGeoZ = new THREE.BoxGeometry(1.8, swH, 230);
+      const sw3 = new THREE.Mesh(swGeoZ, materials.sidewalk);
+      sw3.position.set(5.9, swH/2, 0);
+      sw3.receiveShadow = true;
+      roadGroup.add(sw3);
+
+      const sw4 = sw3.clone();
+      sw4.position.set(-5.9, swH/2, 0);
+      roadGroup.add(sw4);
+
+      // Marka Jalan Putus-Putus
+      for (let i = -100; i <= 100; i += 8) {
+        if (Math.abs(i) < 16) continue;
+        const dash1 = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 4), materials.roadMarking);
+        dash1.rotation.x = -Math.PI / 2;
+        dash1.position.set(0, 0.03, i);
+        roadGroup.add(dash1);
+
+        const dash2 = new THREE.Mesh(new THREE.PlaneGeometry(4, 0.5), materials.roadMarking);
+        dash2.rotation.x = -Math.PI / 2;
+        dash2.position.set(i, 0.03, 0);
+        roadGroup.add(dash2);
+      }
+
+      // Zebra Cross di 4 Sisi Persimpangan Alun-Alun
+      function makeZebraCross(px, pz, isVertical) {
+        const zebraGroup = new THREE.Group();
+        for (let j = -3.5; j <= 3.5; j += 1.2) {
+          const bar = new THREE.Mesh(
+            isVertical ? new THREE.PlaneGeometry(0.65, 3.5) : new THREE.PlaneGeometry(3.5, 0.65),
+            materials.roadMarking
+          );
+          bar.rotation.x = -Math.PI / 2;
+          if (isVertical) {
+            bar.position.set(j, 0.035, 0);
+          } else {
+            bar.position.set(0, 0.035, j);
+          }
+          zebraGroup.add(bar);
+        }
+        zebraGroup.position.set(px, 0, pz);
+        roadGroup.add(zebraGroup);
+      }
+
+      makeZebraCross(0, 16.5, true);
+      makeZebraCross(0, -16.5, true);
+      makeZebraCross(16.5, 0, false);
+      makeZebraCross(-16.5, 0, false);
+
+      scene.add(roadGroup);
+    }
+    createRoadGrid();
+
+    // 3.2 Alun-Alun Tengah Kota: Air Mancur Bertingkat & Bendera Merah Putih
+    function createCitySquare() {
+      const squareGroup = new THREE.Group();
+      
+      // Plaza bundar
+      const plaza = new THREE.Mesh(new THREE.CylinderGeometry(15, 15, 0.25, 32), materials.sidewalk);
+      plaza.position.set(0, 0.12, 0);
+      plaza.receiveShadow = true;
+      squareGroup.add(plaza);
+
+      // Kolam Tingkat 1 (Bawah)
+      const basin1 = new THREE.Mesh(new THREE.CylinderGeometry(5.5, 6, 1.2, 24), new THREE.MeshLambertMaterial({ color: 0x94A3B8 }));
+      basin1.position.set(0, 0.7, 0);
+      basin1.castShadow = true;
+      squareGroup.add(basin1);
+
+      const water1 = new THREE.Mesh(new THREE.CylinderGeometry(5.2, 5.2, 0.2, 24), materials.fountainWater);
+      water1.position.set(0, 1.2, 0);
+      squareGroup.add(water1);
+
+      // Kolam Tingkat 2 (Atas)
+      const basin2 = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.7, 0.9, 20), new THREE.MeshLambertMaterial({ color: 0x94A3B8 }));
+      basin2.position.set(0, 2.1, 0);
+      basin2.castShadow = true;
+      squareGroup.add(basin2);
+
+      const water2 = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.2, 0.2, 20), materials.fountainWater);
+      water2.position.set(0, 2.5, 0);
+      squareGroup.add(water2);
+
+      // Pilar Pusat
+      const centerPillar = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.9, 3.4, 16), new THREE.MeshLambertMaterial({ color: 0xCBD5E1 }));
+      centerPillar.position.set(0, 1.7, 0);
+      centerPillar.castShadow = true;
+      squareGroup.add(centerPillar);
+
+      // Partikel Tetesan Air Mancur Bertingkat
+      const dropGeo = new THREE.DodecahedronGeometry(0.1, 0);
+      const dropMat = new THREE.MeshBasicMaterial({ color: 0xE0F2FE });
+      for (let i = 0; i < 28; i++) {
+        const drop = new THREE.Mesh(dropGeo, dropMat);
+        drop.position.set(0, 3.2, 0);
+        const angle = (i / 28) * Math.PI * 2;
+        const speed = 0.035 + Math.random() * 0.02;
+        fountainDrops.push({
+          mesh: drop,
+          velX: Math.cos(angle) * speed,
+          velZ: Math.sin(angle) * speed,
+          velY: 0.08 + Math.random() * 0.05,
+          startY: 3.2
+        });
+        squareGroup.add(drop);
+      }
+
+      // Tiang Bendera Merah Putih
+      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 13, 16), new THREE.MeshStandardMaterial({ color: 0xE2E8F0, metalness: 0.85 }));
+      pole.position.set(9.5, 6.5, 9.5);
+      pole.castShadow = true;
+      squareGroup.add(pole);
+
+      const flagGroup = new THREE.Group();
+      const flagRed = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 0.8), new THREE.MeshLambertMaterial({ color: 0xDC2626, side: THREE.DoubleSide }));
+      flagRed.position.set(1.25, 0.4, 0);
+      flagGroup.add(flagRed);
+
+      const flagWhite = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 0.8), new THREE.MeshLambertMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide }));
+      flagWhite.position.set(1.25, -0.4, 0);
+      flagGroup.add(flagWhite);
+
+      flagGroup.position.set(9.5, 12, 9.5);
+      squareGroup.add(flagGroup);
+
+      scene.add(squareGroup);
+    }
+    createCitySquare();
+
+    // 3.3 Pepohonan, Lampu Jalan, Angkot & Bus Sekolah
+    function createVegetationAndProps() {
+      // Pepohonan Rindang
+      for (let i = 0; i < 30; i++) {
+        const x = (Math.random() - 0.5) * 180;
+        const z = (Math.random() - 0.5) * 180;
+        if (Math.abs(x) < 18 || Math.abs(z) < 18) continue;
+
+        const tree = new THREE.Group();
+        const trunkH = 2.4 + Math.random() * 1.6;
+        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.42, trunkH, 8), materials.trunk);
+        trunk.position.y = trunkH / 2;
+        trunk.castShadow = true;
+        tree.add(trunk);
+
+        const crown = new THREE.Mesh(new THREE.DodecahedronGeometry(1.7 + Math.random() * 0.8, 1), materials.leaves);
+        crown.position.y = trunkH + 1.2;
+        crown.castShadow = true;
+        tree.add(crown);
+
+        tree.position.set(x, 0, z);
+        scene.add(tree);
+      }
+
+      // Lampu Jalan Dekoratif
+      function makeStreetLight(x, z, rotY) {
+        const lightG = new THREE.Group();
+        const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.14, 5.5, 8), new THREE.MeshLambertMaterial({ color: 0x1E293B }));
+        pole.position.y = 2.75;
+        lightG.add(pole);
+
+        const arm = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.1, 0.1), new THREE.MeshLambertMaterial({ color: 0x1E293B }));
+        arm.position.set(0.5, 5.3, 0);
+        lightG.add(arm);
+
+        const bulb = new THREE.Mesh(new THREE.DodecahedronGeometry(0.25), new THREE.MeshBasicMaterial({ color: 0xFEF08A }));
+        bulb.position.set(1.0, 5.15, 0);
+        lightG.add(bulb);
+
+        lightG.position.set(x, 0, z);
+        lightG.rotation.y = rotY;
+        scene.add(lightG);
+      }
+
+      makeStreetLight(7.2, 18, -Math.PI / 2);
+      makeStreetLight(-7.2, 18, Math.PI / 2);
+      makeStreetLight(7.2, -18, -Math.PI / 2);
+      makeStreetLight(-7.2, -18, Math.PI / 2);
+      makeStreetLight(18, 7.2, 0);
+      makeStreetLight(-18, 7.2, Math.PI);
+
+      // Angkot Hijau Khas
+      function makeVehicle(type, colorHex, x, z, rotY) {
+        const veh = new THREE.Group();
+        const isBus = type === 'bus';
+        const length = isBus ? 8.5 : 4.6;
+        const height = isBus ? 2.6 : 1.9;
+        const width = 2.3;
+
+        const body = new THREE.Mesh(new THREE.BoxGeometry(width, height, length), new THREE.MeshLambertMaterial({ color: colorHex }));
+        body.position.y = height / 2 + 0.35;
+        body.castShadow = true;
+        veh.add(body);
+
+        // Kaca Jendela
+        const glass = new THREE.Mesh(new THREE.BoxGeometry(width + 0.05, height * 0.42, length * 0.65), new THREE.MeshLambertMaterial({ color: 0x94A3B8 }));
+        glass.position.set(0, body.position.y + 0.25, 0.1);
+        veh.add(glass);
+
+        // Roda
+        const wheelGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.36, 14);
+        const wheelMat = new THREE.MeshLambertMaterial({ color: 0x0F172A });
+        const wheelZ = isBus ? [-2.8, 2.8] : [-1.4, 1.4];
+
+        wheelZ.forEach(wz => {
+          [-width/2 - 0.05, width/2 + 0.05].forEach(wx => {
+            const w = new THREE.Mesh(wheelGeo, wheelMat);
+            w.rotation.z = Math.PI / 2;
+            w.position.set(wx, 0.42, wz);
+            veh.add(w);
+          });
+        });
+
+        veh.position.set(x, 0, z);
+        veh.rotation.y = rotY;
+        scene.add(veh);
+      }
+
+      makeVehicle('angkot', 0x10B981, 7.6, 25, 0); // Angkot Hijau
+      makeVehicle('angkot', 0x0284C7, -7.6, -28, Math.PI); // Angkot Biru
+      makeVehicle('bus', 0xFBBF24, 28, -7.6, Math.PI / 2); // Bus Sekolah Kuning
+    }
+    createVegetationAndProps();
+
+    // 3.4 Papan Nama Billboard 3D
+    function createBillboardTexture(titleText, colorHex) {
+      const c = document.createElement('canvas');
+      c.width = 512;
+      c.height = 160;
+      const ctx = c.getContext('2d');
+
+      ctx.fillStyle = colorHex;
+      ctx.roundRect(10, 10, 492, 140, 24);
+      ctx.fill();
+      ctx.lineWidth = 8;
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.stroke();
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 44px Nunito, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(titleText, 256, 80);
+
+      const tex = new THREE.CanvasTexture(c);
+      return tex;
+    }
+
+    // 3.5 Gedung Mata Pelajaran (5 Gedung Utama)
+    const buildingData = [
+      { key: "matematika", name: "Matematika", color: 0xEF4444, hex: "#EF4444", pos: [40, 0, 40], rot: -Math.PI / 4, icon: "📐" },
+      { key: "ipa", name: "IPA / Sains", color: 0x3B82F6, hex: "#3B82F6", pos: [-40, 0, 40], rot: Math.PI / 4, icon: "🔬" },
+      { key: "indo", name: "B. Indonesia", color: 0xF59E0B, hex: "#F59E0B", pos: [-40, 0, -40], rot: 3 * Math.PI / 4, icon: "📖" },
+      { key: "inggris", name: "B. Inggris", color: 0x8B5CF6, hex: "#8B5CF6", pos: [40, 0, -40], rot: -3 * Math.PI / 4, icon: "🌍" },
+      { key: "ips", name: "IPS & Budaya", color: 0x10B981, hex: "#10B981", pos: [0, 0, -56], rot: Math.PI, icon: "🏛️" }
+    ];
+
+    buildingData.forEach(b => {
+      const bGroup = new THREE.Group();
+
+      // Struktur Utama Gedung
+      const bMat = new THREE.MeshLambertMaterial({ color: b.color });
+      const mainBuilding = new THREE.Mesh(new THREE.BoxGeometry(16, 12, 18), bMat);
+      mainBuilding.position.y = 6;
+      mainBuilding.castShadow = true;
+      mainBuilding.receiveShadow = true;
+      bGroup.add(mainBuilding);
+
+      // Atap Segitiga Piramidal Modern
+      const roof = new THREE.Mesh(new THREE.ConeGeometry(13.2, 6.2, 4), new THREE.MeshLambertMaterial({ color: 0x1E293B }));
+      roof.rotation.y = Math.PI / 4;
+      roof.position.y = 15.1;
+      roof.castShadow = true;
+      bGroup.add(roof);
+
+      // Pintu Masuk
+      const door = new THREE.Mesh(new THREE.BoxGeometry(4.5, 6, 0.4), new THREE.MeshLambertMaterial({ color: 0x0F172A }));
+      door.position.set(0, 3, 9.1);
+      bGroup.add(door);
+
+      // Billboard Papan Nama Melayang
+      const labelTex = createBillboardTexture(b.name, b.hex);
+      const labelMat = new THREE.MeshBasicMaterial({ map: labelTex, transparent: true });
+      const labelMesh = new THREE.Mesh(new THREE.PlaneGeometry(8, 2.5), labelMat);
+      labelMesh.position.set(0, 13.5, 9.4);
+      bGroup.add(labelMesh);
+
+      // Glowing Portal Pad di depan pintu
+      const padGeo = new THREE.CylinderGeometry(2.6, 2.8, 0.25, 24);
+      const padMat = new THREE.MeshStandardMaterial({ 
+        color: b.color, 
+        emissive: b.color, 
+        emissiveIntensity: 0.65,
+        transparent: true,
+        opacity: 0.85
+      });
+      const padMesh = new THREE.Mesh(padGeo, padMat);
+      padMesh.position.set(0, 0.15, 12.5);
+      padMesh.receiveShadow = true;
+      bGroup.add(padMesh);
+
+      const ringGeo = new THREE.RingGeometry(2.3, 2.7, 32);
+      const ringMat = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide });
+      const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+      ringMesh.rotation.x = -Math.PI / 2;
+      ringMesh.position.set(0, 0.29, 12.5);
+      bGroup.add(ringMesh);
+
+      bGroup.position.set(...b.pos);
+      bGroup.rotation.y = b.rot;
+      scene.add(bGroup);
+
+      const worldPadPos = new THREE.Vector3(0, 0.2, 12.5).applyEuler(bGroup.rotation).add(bGroup.position);
+      interactiveZones.push({
+        type: 'building',
+        key: b.key,
+        name: b.name,
+        icon: b.icon,
+        pos: worldPadPos,
+        radius: 3.5,
+        mesh: padMesh
+      });
+    });
+
+    // 3.6 Kolektibel Koin Emas & Buku Ilmu
+    function spawnCollectibles() {
+      // 14 Koin Emas
+      const coinGeo = new THREE.CylinderGeometry(0.7, 0.7, 0.16, 16);
+      coinGeo.rotateX(Math.PI / 2);
+      for (let i = 0; i < 14; i++) {
+        const coin = new THREE.Mesh(coinGeo, materials.gold);
+        const angle = (i / 14) * Math.PI * 2;
+        const dist = 18 + Math.random() * 40;
+        coin.position.set(Math.cos(angle) * dist, 1.2, Math.sin(angle) * dist);
+        coin.castShadow = true;
+        scene.add(coin);
+        animatedCollectibles.push({ type: 'coin', mesh: coin, basePos: coin.position.clone() });
+      }
+
+      // 6 Buku Ilmu Bercahaya
+      const bookGeo = new THREE.BoxGeometry(0.9, 1.2, 0.35);
+      for (let i = 0; i < 6; i++) {
+        const book = new THREE.Mesh(bookGeo, materials.book);
+        const bx = (Math.random() - 0.5) * 85;
+        const bz = (Math.random() - 0.5) * 85;
+        book.position.set(bx, 1.4, bz);
+        book.castShadow = true;
+        scene.add(book);
+        animatedCollectibles.push({ type: 'book', mesh: book, basePos: book.position.clone() });
+      }
+    }
+    spawnCollectibles();
+
+    // 3.7 Karakter Warga NPC dengan Tanda Seru "!"
+    function createNPC(name, x, z, dialogue) {
+      const npcGroup = new THREE.Group();
+      
+      const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.1, 0.6), new THREE.MeshLambertMaterial({ color: 0x0284C7 }));
+      body.position.y = 1.1;
+      body.castShadow = true;
+      npcGroup.add(body);
+
+      const head = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.6), new THREE.MeshLambertMaterial({ color: 0xFFDBAC }));
+      head.position.y = 2.0;
+      head.castShadow = true;
+      npcGroup.add(head);
+
+      // Tanda Seru "!" Melayang di Atas Kepala
+      const exC = document.createElement('canvas');
+      exC.width = 128;
+      exC.height = 128;
+      const ctx = exC.getContext('2d');
+      ctx.fillStyle = '#F59E0B';
+      ctx.beginPath();
+      ctx.arc(64, 64, 58, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 84px Nunito';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('!', 64, 66);
+      
+      const exTex = new THREE.CanvasTexture(exC);
+      const exMat = new THREE.MeshBasicMaterial({ map: exTex, transparent: true, side: THREE.DoubleSide });
+      const exMesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), exMat);
+      exMesh.position.y = 3.15;
+      npcGroup.add(exMesh);
+
+      npcGroup.position.set(x, 0, z);
+      scene.add(npcGroup);
+
+      interactiveZones.push({
+        type: 'npc',
+        name: name,
+        dialogue: dialogue,
+        pos: new THREE.Vector3(x, 1, z),
+        radius: 3.2,
+        exMesh: exMesh
+      });
+      npcs.push({ group: npcGroup, exMesh: exMesh });
+    }
+
+    createNPC("Pak Budi (Guru Sekolah)", 12, 12, "Selamat datang di Roblox Cerdas 3D! Jelajahi 5 gedung ilmu pengetahuan, kumpulkan buku & raih skor ujian kuis terbaikmu!");
+    createNPC("Siti (Sahabat Belajar)", -14, 16, "Ayo gunakan Lemari Gaya untuk mengenakan seragam Pramuka atau Batik Nusantara! Tekan tombol E saat berada di dekat portal gedung ya.");
+
+    /* =====================================================================
+       4. AVATAR KARAKTER MODULAR 3D & AKSESORIS
+       ===================================================================== */
+    const playerGroup = new THREE.Group();
+    playerGroup.position.set(0, 0, 18);
+    scene.add(playerGroup);
+
+    const avatarMats = {
+      skin: new THREE.MeshLambertMaterial({ color: 0xFCD34D }),
+      hair: new THREE.MeshLambertMaterial({ color: 0x3B2F2F }),
+      shirt: new THREE.MeshLambertMaterial({ color: 0xFFFFFF }),
+      pants: new THREE.MeshLambertMaterial({ color: 0xDC2626 }),
+      shoes: new THREE.MeshLambertMaterial({ color: 0x1E293B }),
+      accessory: new THREE.MeshLambertMaterial({ color: 0xDC2626 })
+    };
+
+    // Kepala & Rambut
+    const headMesh = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.7, 0.7), avatarMats.skin);
+    headMesh.position.y = 2.05;
+    headMesh.castShadow = true;
+    playerGroup.add(headMesh);
+
+    const hairMesh = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.35, 0.76), avatarMats.hair);
+    hairMesh.position.set(0, 2.32, 0);
+    hairMesh.castShadow = true;
+    playerGroup.add(hairMesh);
+
+    // Badan / Kemeja
+    const bodyMesh = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.0, 0.55), avatarMats.shirt);
+    bodyMesh.position.y = 1.35;
+    bodyMesh.castShadow = true;
+    playerGroup.add(bodyMesh);
+
+    // Kaki Kiri & Kanan (Celana/Rok)
+    const legGeo = new THREE.BoxGeometry(0.35, 0.85, 0.4);
+    const leftLeg = new THREE.Mesh(legGeo, avatarMats.pants);
+    leftLeg.position.set(-0.25, 0.5, 0);
+    leftLeg.castShadow = true;
+    playerGroup.add(leftLeg);
+
+    const rightLeg = new THREE.Mesh(legGeo, avatarMats.pants);
+    rightLeg.position.set(0.25, 0.5, 0);
+    rightLeg.castShadow = true;
+    playerGroup.add(rightLeg);
+
+    // Lengan Kiri & Kanan
+    const armGeo = new THREE.BoxGeometry(0.25, 0.75, 0.3);
+    const leftArm = new THREE.Mesh(armGeo, avatarMats.shirt);
+    leftArm.position.set(-0.62, 1.35, 0);
+    leftArm.castShadow = true;
+    playerGroup.add(leftArm);
+
+    const rightArm = new THREE.Mesh(armGeo, avatarMats.shirt);
+    rightArm.position.set(0.62, 1.35, 0);
+    rightArm.castShadow = true;
+    playerGroup.add(rightArm);
+
+    // Wadah Aksesoris (Topi & Kacamata)
+    const accessoryGroup = new THREE.Group();
+    playerGroup.add(accessoryGroup);
+
+    // Pilihan Seragam Presets
+    const outfitPresets = {
+      sd: { name: "SD Merah-Putih", shirt: 0xFFFFFF, pants: 0xDC2626, icon: "🎒" },
+      smp: { name: "SMP Biru-Putih", shirt: 0xFFFFFF, pants: 0x2563EB, icon: "📘" },
+      sma: { name: "SMA Abu-Putih", shirt: 0xFFFFFF, pants: 0x64748B, icon: "🎓" },
+      pramuka: { name: "Pramuka Praja", shirt: 0xD97706, pants: 0x78350F, icon: "🏕️" },
+      batik: { name: "Batik Nusantara", shirt: 0x9333EA, pants: 0x1E293B, icon: "✨" }
+    };
+
+    function applyOutfit(key) {
+      const preset = outfitPresets[key] || outfitPresets.sd;
+      avatarMats.shirt.color.setHex(preset.shirt);
+      avatarMats.pants.color.setHex(preset.pants);
+      gameState.uniform = key;
+      saveState();
+      renderWardrobeUI();
+    }
+
+    function applyAccessory(type) {
+      gameState.accessory = type;
+      // Bersihkan grup aksesoris
+      while(accessoryGroup.children.length > 0) {
+        accessoryGroup.remove(accessoryGroup.children[0]);
+      }
+
+      if (type === 'cap') {
+        const cap = new THREE.Group();
+        const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.44, 0.25, 16), new THREE.MeshLambertMaterial({ color: 0xDC2626 }));
+        crown.position.set(0, 2.52, 0);
+        cap.add(crown);
+
+        const visor = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.05, 0.4), new THREE.MeshLambertMaterial({ color: 0xFFFFFF }));
+        visor.position.set(0, 2.45, 0.4);
+        cap.add(visor);
+
+        accessoryGroup.add(cap);
+      } else if (type === 'glasses') {
+        const frameMat = new THREE.MeshLambertMaterial({ color: 0x111827 });
+        const glasses = new THREE.Group();
+        const f1 = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.18, 0.05), frameMat);
+        f1.position.set(-0.16, 2.1, 0.38);
+        glasses.add(f1);
+
+        const f2 = f1.clone();
+        f2.position.set(0.16, 2.1, 0.38);
+        glasses.add(f2);
+
+        const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.04, 0.05), frameMat);
+        bridge.position.set(0, 2.1, 0.38);
+        glasses.add(bridge);
+
+        accessoryGroup.add(glasses);
+      }
+
+      saveState();
+      renderWardrobeUI();
+    }
+
+    function applyHairColor(hex) {
+      avatarMats.hair.color.setStyle(hex);
+      gameState.hairColor = hex;
+      saveState();
+      renderWardrobeUI();
+    }
+
+    /* =====================================================================
+       5. INPUT CONTROLLER (DESKTOP, MOBILE & IFP/PID TOUCH)
+       ===================================================================== */
+    const input = {
+      forward: 0,
+      backward: 0,
+      left: 0,
+      right: 0,
+      jump: false,
+      sprint: false
+    };
+
+    let isGamePaused = false;
+
+    // Desktop Key Listener
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Escape') {
+        if (document.querySelector('.modal-overlay.active')) {
+          closeModal();
+        } else {
+          togglePause();
+        }
+        return;
+      }
+      if (document.querySelector('.modal-overlay.active') || isGamePaused) return;
+
+      switch (e.code) {
+        case 'KeyW': case 'ArrowUp': input.forward = 1; break;
+        case 'KeyS': case 'ArrowDown': input.backward = 1; break;
+        case 'KeyA': case 'ArrowLeft': input.left = 1; break;
+        case 'KeyD': case 'ArrowRight': input.right = 1; break;
+        case 'Space': 
+          if (!input.jump && playerState.isGrounded) {
+            input.jump = true;
+            playerState.velocityY = playerState.jumpForce;
+            playerState.isGrounded = false;
+            audio.playJump();
+          }
+          break;
+        case 'ShiftLeft': case 'ShiftRight': input.sprint = true; break;
+        case 'KeyE': triggerCurrentInteraction(); break;
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      switch (e.code) {
+        case 'KeyW': case 'ArrowUp': input.forward = 0; break;
+        case 'KeyS': case 'ArrowDown': input.backward = 0; break;
+        case 'KeyA': case 'ArrowLeft': input.left = 0; break;
+        case 'KeyD': case 'ArrowRight': input.right = 0; break;
+        case 'Space': input.jump = false; break;
+        case 'ShiftLeft': case 'ShiftRight': input.sprint = false; break;
+      }
+    });
+
+    // Orbit & Zoom Kamera
+    let cameraOrbit = { yaw: 0, pitch: 0.35, distance: 13 };
+    let isDragging = false;
+    let prevMousePos = { x: 0, y: 0 };
+
+    window.addEventListener('mousedown', (e) => {
+      if (e.target.tagName !== 'CANVAS') return;
+      isDragging = true;
+      prevMousePos = { x: e.clientX, y: e.clientY };
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging || isGamePaused) return;
+      const dx = e.clientX - prevMousePos.x;
+      const dy = e.clientY - prevMousePos.y;
+      cameraOrbit.yaw -= dx * 0.006;
+      cameraOrbit.pitch = Math.max(0.1, Math.min(1.2, cameraOrbit.pitch + dy * 0.005));
+      prevMousePos = { x: e.clientX, y: e.clientY };
+    });
+
+    window.addEventListener('mouseup', () => isDragging = false);
+
+    window.addEventListener('wheel', (e) => {
+      if (isGamePaused) return;
+      cameraOrbit.distance = Math.max(6, Math.min(22, cameraOrbit.distance + e.deltaY * 0.015));
+    }, { passive: true });
+
+    // Virtual Joystick Layar Sentuh Mobile / IFP
+    const joystickZone = document.getElementById('joystick-zone');
+    const joystickHandle = document.getElementById('joystick-handle');
+    let touchStartPos = null;
+
+    joystickZone.addEventListener('touchstart', (e) => {
+      if (isGamePaused) return;
+      const rect = joystickZone.getBoundingClientRect();
+      touchStartPos = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    }, { passive: false });
+
+    joystickZone.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      if (!touchStartPos || isGamePaused) return;
+      const t = e.touches[0];
+      const maxDist = 45;
+      let dx = t.clientX - touchStartPos.x;
+      let dy = t.clientY - touchStartPos.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist > maxDist) {
+        dx = (dx / dist) * maxDist;
+        dy = (dy / dist) * maxDist;
+      }
+      joystickHandle.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+      
+      const nx = dx / maxDist;
+      const ny = dy / maxDist;
+      input.left = nx < -0.2 ? -nx : 0;
+      input.right = nx > 0.2 ? nx : 0;
+      input.forward = ny < -0.2 ? -ny : 0;
+      input.backward = ny > 0.2 ? ny : 0;
+    }, { passive: false });
+
+    function resetJoystick() {
+      touchStartPos = null;
+      joystickHandle.style.transform = `translate(-50%, -50%)`;
+      input.forward = 0;
+      input.backward = 0;
+      input.left = 0;
+      input.right = 0;
+    }
+
+    joystickZone.addEventListener('touchend', resetJoystick);
+    joystickZone.addEventListener('touchcancel', resetJoystick);
+
+    // Tombol Sentuh Mobile / IFP
+    const touchJump = document.getElementById('touch-jump');
+    touchJump.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      if (playerState.isGrounded && !isGamePaused) {
+        playerState.velocityY = playerState.jumpForce;
+        playerState.isGrounded = false;
+        audio.playJump();
+      }
+    });
+
+    const touchInteract = document.getElementById('touch-interact');
+    touchInteract.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      triggerCurrentInteraction();
+    });
+
+    // Touch Drag untuk Kamera di layar kosong
+    let touchCamPrev = null;
+    canvas.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1 && !isGamePaused) {
+        touchCamPrev = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+    });
+
+    canvas.addEventListener('touchmove', (e) => {
+      if (touchCamPrev && e.touches.length === 1 && !isGamePaused) {
+        const dx = e.touches[0].clientX - touchCamPrev.x;
+        const dy = e.touches[0].clientY - touchCamPrev.y;
+        cameraOrbit.yaw -= dx * 0.008;
+        cameraOrbit.pitch = Math.max(0.1, Math.min(1.2, cameraOrbit.pitch + dy * 0.006));
+        touchCamPrev = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+    });
+
+    canvas.addEventListener('touchend', () => touchCamPrev = null);
+
+    // Tombol Pause
+    document.getElementById('btn-pause').onclick = togglePause;
+    function togglePause() {
+      isGamePaused = !isGamePaused;
+      showToast(isGamePaused ? "Game Dijeda (Paused) ⏸️" : "Melanjutkan Permainan ▶️", "⏱️");
+      document.getElementById('btn-pause').innerText = isGamePaused ? "▶️" : "⏸️";
+    }
+
+    /* =====================================================================
+       6. UPDATE FISIKA, ANIMASI & INTERAKSI
+       ===================================================================== */
+    const playerState = {
+      velocityY: 0,
+      gravity: -24,
+      jumpForce: 10.5,
+      isGrounded: true,
+      walkCycle: 0
+    };
+
+    let nearestInteraction = null;
+
+    function updatePlayer(delta) {
+      if (isGamePaused) return;
+
+      let moveZ = (input.backward - input.forward);
+      let moveX = (input.right - input.left);
+
+      const moveDir = new THREE.Vector3(moveX, 0, moveZ);
+      if (moveDir.length() > 0.1) {
+        moveDir.normalize();
+        moveDir.applyAxisAngle(new THREE.Vector3(0, 1, 0), cameraOrbit.yaw);
+
+        const speed = input.sprint ? 14 : 8.5;
+        playerGroup.position.x += moveDir.x * speed * delta;
+        playerGroup.position.z += moveDir.z * speed * delta;
+
+        const targetRot = Math.atan2(moveDir.x, moveDir.z);
+        playerGroup.rotation.y = THREE.MathUtils.lerp(playerGroup.rotation.y, targetRot, 0.2);
+
+        // Walking cycle procedural
+        playerState.walkCycle += delta * (input.sprint ? 18 : 12);
+        const legSwing = Math.sin(playerState.walkCycle) * 0.45;
+        const armSwing = Math.cos(playerState.walkCycle) * 0.5;
+
+        leftLeg.rotation.x = legSwing;
+        rightLeg.rotation.x = -legSwing;
+        leftArm.rotation.x = -armSwing;
+        rightArm.rotation.x = armSwing;
+      } else {
+        leftLeg.rotation.x = THREE.MathUtils.lerp(leftLeg.rotation.x, 0, 0.15);
+        rightLeg.rotation.x = THREE.MathUtils.lerp(rightLeg.rotation.x, 0, 0.15);
+        leftArm.rotation.x = THREE.MathUtils.lerp(leftArm.rotation.x, 0, 0.15);
+        rightArm.rotation.x = THREE.MathUtils.lerp(rightArm.rotation.x, 0, 0.15);
+      }
+
+      // Gravitasi & Lompatan
+      playerState.velocityY += playerState.gravity * delta;
+      playerGroup.position.y += playerState.velocityY * delta;
+
+      if (playerGroup.position.y <= 0) {
+        playerGroup.position.y = 0;
+        playerState.velocityY = 0;
+        playerState.isGrounded = true;
+      }
+
+      // Batasi peta dunia
+      playerGroup.position.x = Math.max(-110, Math.min(110, playerGroup.position.x));
+      playerGroup.position.z = Math.max(-110, Math.min(110, playerGroup.position.z));
+    }
+
+    function updateCamera() {
+      const camTargetX = playerGroup.position.x + Math.sin(cameraOrbit.yaw) * Math.cos(cameraOrbit.pitch) * cameraOrbit.distance;
+      const camTargetY = playerGroup.position.y + Math.sin(cameraOrbit.pitch) * cameraOrbit.distance + 2;
+      const camTargetZ = playerGroup.position.z + Math.cos(cameraOrbit.yaw) * Math.cos(cameraOrbit.pitch) * cameraOrbit.distance;
+
+      camera.position.lerp(new THREE.Vector3(camTargetX, camTargetY, camTargetZ), 0.12);
+      camera.lookAt(playerGroup.position.x, playerGroup.position.y + 1.8, playerGroup.position.z);
+    }
+
+    function checkProximity() {
+      if (isGamePaused) return;
+      const pPos = playerGroup.position;
+
+      // Koleksi Koin & Buku
+      for (let i = animatedCollectibles.length - 1; i >= 0; i--) {
+        const item = animatedCollectibles[i];
+        const dist = pPos.distanceTo(item.mesh.position);
+        if (dist < 1.8) {
+          scene.remove(item.mesh);
+          animatedCollectibles.splice(i, 1);
+          if (item.type === 'coin') {
+            audio.playCoin();
+            addCoins(10);
+            addXP(15);
+            showToast("+10 Koin Emas didapatkan!", "🪙");
+          } else if (item.type === 'book') {
+            audio.playCorrect();
+            gameState.booksCollected++;
+            addXP(40);
+            showToast("Buku Ilmu Terbuka! (+40 XP)", "📚");
+          }
+          saveState();
+        }
+      }
+
+      // Cek Zona Interaksi Gedung & NPC
+      nearestInteraction = null;
+      let minDist = Infinity;
+
+      interactiveZones.forEach(zone => {
+        const dist = pPos.distanceTo(zone.pos);
+        if (dist < zone.radius && dist < minDist) {
+          minDist = dist;
+          nearestInteraction = zone;
+        }
+      });
+
+      const prompt = document.getElementById('interact-prompt');
+      const promptText = document.getElementById('interact-text');
+
+      if (nearestInteraction) {
+        prompt.classList.add('show');
+        if (nearestInteraction.type === 'building') {
+          promptText.innerText = `Masuk ${nearestInteraction.name}`;
+        } else if (nearestInteraction.type === 'npc') {
+          promptText.innerText = `Bicara dengan ${nearestInteraction.name}`;
+        }
+      } else {
+        prompt.classList.remove('show');
+      }
+    }
+
+    function triggerCurrentInteraction() {
+      if (!nearestInteraction) return;
+
+      if (nearestInteraction.type === 'building') {
+        openBuildingModal(nearestInteraction.key);
+      } else if (nearestInteraction.type === 'npc') {
+        audio.playCoin();
+        gameState.talkedNpc++;
+        saveState();
+        showToast(`${nearestInteraction.name}: "${nearestInteraction.dialogue}"`, "💬");
+      }
+    }
+
+    /* =====================================================================
+       7. RADAR MINIMAP 2D REAL-TIME
+       ===================================================================== */
+    const radarCanvas = document.getElementById('radar-canvas');
+    const rCtx = radarCanvas.getContext('2d');
+
+    function updateMinimap() {
+      const w = radarCanvas.width;
+      const h = radarCanvas.height;
+      const cx = w / 2;
+      const cy = h / 2;
+      const mapScale = 0.44;
+
+      rCtx.clearRect(0, 0, w, h);
+
+      // Background radar
+      rCtx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+      rCtx.beginPath();
+      rCtx.arc(cx, cy, cx - 2, 0, Math.PI * 2);
+      rCtx.fill();
+
+      // Lingkaran grid radar
+      rCtx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+      rCtx.lineWidth = 1;
+      rCtx.beginPath();
+      rCtx.arc(cx, cy, (cx - 2) * 0.5, 0, Math.PI * 2);
+      rCtx.stroke();
+
+      // Titik Gedung Mapel
+      buildingData.forEach(b => {
+        const bx = cx + (b.pos[0] - playerGroup.position.x) * mapScale;
+        const bz = cy + (b.pos[2] - playerGroup.position.z) * mapScale;
+
+        const dist = Math.hypot(bx - cx, bz - cy);
+        if (dist < cx - 6) {
+          rCtx.fillStyle = b.hex;
+          rCtx.beginPath();
+          rCtx.arc(bx, bz, 5, 0, Math.PI * 2);
+          rCtx.fill();
+        }
+      });
+
+      // Pemain & Panah Orientasi
+      rCtx.save();
+      rCtx.translate(cx, cy);
+      rCtx.rotate(-playerGroup.rotation.y);
+
+      rCtx.fillStyle = '#38BDF8';
+      rCtx.beginPath();
+      rCtx.moveTo(0, -7);
+      rCtx.lineTo(5, 5);
+      rCtx.lineTo(0, 2);
+      rCtx.lineTo(-5, 5);
+      rCtx.closePath();
+      rCtx.fill();
+
+      rCtx.restore();
+    }
+
+    /* =====================================================================
+       8. SISTEM MODAL, KUIS EDUKASI & COMBO MULTIPLIER
+       ===================================================================== */
+    let currentBuildingKey = null;
+    let quizSession = {
+      questions: [],
+      currentIndex: 0,
+      hearts: 3,
+      timer: 30,
+      timerInterval: null,
+      combo: 1,
+      score: 0,
+      totalEarnedCoins: 0,
+      totalEarnedXP: 0
+    };
+
+    function openBuildingModal(key) {
+      currentBuildingKey = key;
+      const curData = gameState.curriculum[key];
+      if (!curData) return;
+
+      document.getElementById('building-modal-icon').innerText = curData.icon || "🏛️";
+      document.getElementById('building-modal-title').innerText = curData.title;
+      document.getElementById('materi-text').innerText = curData.materi;
+
+      switchBuildingTab('materi');
+      document.getElementById('modal-building').classList.add('active');
+    }
+
+    function switchBuildingTab(tab) {
+      const isMateri = tab === 'materi';
+      document.getElementById('tab-btn-materi').classList.toggle('active', isMateri);
+      document.getElementById('tab-btn-kuis').classList.toggle('active', !isMateri);
+      document.getElementById('tab-content-materi').style.display = isMateri ? 'block' : 'none';
+      document.getElementById('tab-content-kuis').style.display = !isMateri ? 'block' : 'none';
+      if (isMateri && quizSession.timerInterval) {
+        clearInterval(quizSession.timerInterval);
+      }
+    }
+
+    function startBuildingQuiz() {
+      switchBuildingTab('kuis');
+      const curData = gameState.curriculum[currentBuildingKey];
+      if (!curData || !curData.quizzes || curData.quizzes.length === 0) {
+        alert("Belum ada soal untuk mata pelajaran ini.");
+        return;
+      }
+
+      quizSession.questions = [...curData.quizzes];
+      quizSession.currentIndex = 0;
+      quizSession.hearts = 3;
+      quizSession.combo = 1;
+      quizSession.score = 0;
+      quizSession.totalEarnedCoins = 0;
+      quizSession.totalEarnedXP = 0;
+
+      document.getElementById('quiz-summary').style.display = 'none';
+      document.getElementById('quiz-question').style.display = 'block';
+      document.getElementById('quiz-options').style.display = 'flex';
+      document.querySelector('.quiz-stats').style.display = 'flex';
+
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      const qData = quizSession.questions[quizSession.currentIndex];
+      document.getElementById('quiz-hearts').innerText = "❤".repeat(quizSession.hearts) + "🖤".repeat(3 - quizSession.hearts);
+      document.getElementById('quiz-combo').innerText = `Combo: x${quizSession.combo} 🔥`;
+      document.getElementById('quiz-question').innerText = `${quizSession.currentIndex + 1}. ${qData.q}`;
+      document.getElementById('quiz-explanation').style.display = 'none';
+      document.getElementById('quiz-next-btn').style.display = 'none';
+
+      const optionsBox = document.getElementById('quiz-options');
+      optionsBox.innerHTML = '';
+
+      qData.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'answer-btn';
+        btn.innerHTML = `<span style="font-weight:900; color:#818cf8;">${String.fromCharCode(65 + idx)}.</span> ${opt}`;
+        btn.onclick = () => selectAnswer(idx);
+        optionsBox.appendChild(btn);
+      });
+
+      // Timer 30 detik
+      clearInterval(quizSession.timerInterval);
+      quizSession.timer = 28;
+      const timerEl = document.getElementById('quiz-timer');
+      timerEl.classList.remove('warning');
+      timerEl.innerText = `⏱️ ${quizSession.timer}s`;
+
+      quizSession.timerInterval = setInterval(() => {
+        quizSession.timer--;
+        timerEl.innerText = `⏱️ ${quizSession.timer}s`;
+        if (quizSession.timer <= 7) timerEl.classList.add('warning');
+
+        if (quizSession.timer <= 0) {
+          clearInterval(quizSession.timerInterval);
+          selectAnswer(-1);
+        }
+      }, 1000);
+    }
+
+    function selectAnswer(chosenIdx) {
+      clearInterval(quizSession.timerInterval);
+      const qData = quizSession.questions[quizSession.currentIndex];
+      const buttons = document.querySelectorAll('.answer-btn');
+      buttons.forEach(btn => btn.disabled = true);
+
+      const isCorrect = chosenIdx === qData.answer;
+
+      if (isCorrect) {
+        audio.playCorrect();
+        if (buttons[chosenIdx]) buttons[chosenIdx].classList.add('correct');
+        const earnCoins = 15 * quizSession.combo;
+        const earnXP = 30 * quizSession.combo;
+        quizSession.score++;
+        quizSession.totalEarnedCoins += earnCoins;
+        quizSession.totalEarnedXP += earnXP;
+        quizSession.combo++;
+        showToast(`Jawaban Benar! +${earnCoins} Koin, +${earnXP} XP`, "✨");
+      } else {
+        audio.playWrong();
+        if (chosenIdx >= 0 && buttons[chosenIdx]) buttons[chosenIdx].classList.add('wrong');
+        if (buttons[qData.answer]) buttons[qData.answer].classList.add('correct');
+        quizSession.hearts--;
+        quizSession.combo = 1;
+        document.getElementById('quiz-hearts').innerText = "❤".repeat(Math.max(0, quizSession.hearts)) + "🖤".repeat(3 - Math.max(0, quizSession.hearts));
+      }
+
+      // Pembahasan langsung
+      const explainBox = document.getElementById('quiz-explanation');
+      document.getElementById('quiz-explanation-text').innerText = qData.explain;
+      explainBox.style.display = 'block';
+
+      const nextBtn = document.getElementById('quiz-next-btn');
+      nextBtn.style.display = 'block';
+      if (quizSession.hearts <= 0 || quizSession.currentIndex >= quizSession.questions.length - 1) {
+        nextBtn.innerText = "Lihat Rangkuman Hasil ➔";
+      } else {
+        nextBtn.innerText = "Pertanyaan Selanjutnya ➔";
+      }
+    }
+
+    function nextQuestion() {
+      if (quizSession.hearts <= 0 || quizSession.currentIndex >= quizSession.questions.length - 1) {
+        finishQuiz();
+      } else {
+        quizSession.currentIndex++;
+        loadQuestion();
+      }
+    }
+
+    function finishQuiz() {
+      clearInterval(quizSession.timerInterval);
+      document.getElementById('quiz-question').style.display = 'none';
+      document.getElementById('quiz-options').style.display = 'none';
+      document.getElementById('quiz-explanation').style.display = 'none';
+      document.getElementById('quiz-next-btn').style.display = 'none';
+      document.querySelector('.quiz-stats').style.display = 'none';
+
+      const summary = document.getElementById('quiz-summary');
+      summary.style.display = 'block';
+
+      const totalQ = quizSession.questions.length;
+      const scorePct = Math.round((quizSession.score / totalQ) * 100);
+      document.getElementById('quiz-result-score').innerText = `Skor Akhir: ${scorePct}/100 (${quizSession.score} dari ${totalQ} Soal Benar)`;
+      document.getElementById('quiz-reward-coins').innerText = `+${quizSession.totalEarnedCoins}`;
+      document.getElementById('quiz-reward-xp').innerText = `+${quizSession.totalEarnedXP}`;
+
+      addCoins(quizSession.totalEarnedCoins);
+      addXP(quizSession.totalEarnedXP);
+    }
+
+    function closeModal(modalId) {
+      if (modalId) {
+        document.getElementById(modalId).classList.remove('active');
+      } else {
+        document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+      }
+      if (quizSession.timerInterval) clearInterval(quizSession.timerInterval);
+    }
+
+    /* =====================================================================
+       9. LEMARI GAYA (WARDROBE), PAPAN MISI & MODE GURU UI
+       ===================================================================== */
+    // Wardrobe UI
+    document.getElementById('btn-wardrobe').onclick = () => {
+      renderWardrobeUI();
+      document.getElementById('modal-wardrobe').classList.add('active');
+    };
+
+    function renderWardrobeUI() {
+      // Seragam
+      const container = document.getElementById('outfit-options');
+      container.innerHTML = '';
+      Object.keys(outfitPresets).forEach(key => {
+        const item = outfitPresets[key];
+        const card = document.createElement('div');
+        card.className = `wardrobe-item ${gameState.uniform === key ? 'active' : ''}`;
+        card.innerHTML = `
+          <div class="wardrobe-preview" style="background: #${item.pants.toString(16).padStart(6, '0')}">${item.icon}</div>
+          <div class="wardrobe-label">${item.name}</div>
+        `;
+        card.onclick = () => applyOutfit(key);
+        container.appendChild(card);
+      });
+
+      // Aksesoris (Topi, Kacamata)
+      const accContainer = document.getElementById('accessory-options');
+      accContainer.innerHTML = '';
+      const accessories = [
+        { id: "none", name: "Tanpa Aksesoris", icon: "👤" },
+        { id: "cap", name: "Topi Sekolah", icon: "🧢" },
+        { id: "glasses", name: "Kacamata Pintar", icon: "👓" }
+      ];
+      accessories.forEach(a => {
+        const aCard = document.createElement('div');
+        aCard.className = `wardrobe-item ${gameState.accessory === a.id ? 'active' : ''}`;
+        aCard.innerHTML = `
+          <div class="wardrobe-preview" style="background: #334155">${a.icon}</div>
+          <div class="wardrobe-label">${a.name}</div>
+        `;
+        aCard.onclick = () => applyAccessory(a.id);
+        accContainer.appendChild(aCard);
+      });
+
+      // Warna Rambut
+      const hairBox = document.getElementById('hair-color-options');
+      hairBox.innerHTML = '';
+      const colors = [
+        { name: "Cokelat Tua", hex: "#3B2F2F" },
+        { name: "Hitam Alami", hex: "#111827" },
+        { name: "Pirang Keemasan", hex: "#D97706" },
+        { name: "Biru Neon", hex: "#38BDF8" }
+      ];
+      colors.forEach(c => {
+        const hCard = document.createElement('div');
+        hCard.className = `wardrobe-item ${gameState.hairColor === c.hex ? 'active' : ''}`;
+        hCard.innerHTML = `
+          <div class="wardrobe-preview" style="background: ${c.hex}">✂️</div>
+          <div class="wardrobe-label">${c.name}</div>
+        `;
+        hCard.onclick = () => applyHairColor(c.hex);
+        hairBox.appendChild(hCard);
+      });
+    }
+
+    // Papan Misi / Quest Board
+    document.getElementById('btn-quests').onclick = () => {
+      renderQuestsUI();
+      document.getElementById('modal-quests').classList.add('active');
+    };
+
+    const questsData = [
+      { id: "q1", desc: "Kumpulkan 3 Buku Ilmu di Kota", goal: 3, getVal: () => gameState.booksCollected, rewardCoins: 60, rewardXP: 100 },
+      { id: "q2", desc: "Bicara dengan 2 Warga Kota (NPC)", goal: 2, getVal: () => gameState.talkedNpc, rewardCoins: 40, rewardXP: 80 },
+      { id: "q3", desc: "Kumpulkan 8 Koin Emas Penjelajah", goal: 8, getVal: () => gameState.coins, rewardCoins: 50, rewardXP: 120 }
+    ];
+
+    function renderQuestsUI() {
+      const container = document.getElementById('quest-list-container');
+      container.innerHTML = '';
+      questsData.forEach(q => {
+        const curVal = q.getVal();
+        const isDone = curVal >= q.goal;
+        const isClaimed = !!gameState.completedQuests[q.id];
+
+        const item = document.createElement('div');
+        item.className = 'quest-item';
+        item.innerHTML = `
+          <div>
+            <div class="quest-desc">${q.desc} (${Math.min(curVal, q.goal)}/${q.goal})</div>
+            <div class="quest-reward">+${q.rewardCoins} Koin | +${q.rewardXP} XP</div>
+          </div>
+          <button class="claim-btn" id="claim-${q.id}" ${(!isDone || isClaimed) ? 'disabled' : ''}>
+            ${isClaimed ? 'Diklaim ✓' : (isDone ? 'Klaim Hadiah!' : 'Sedang Berjalan')}
+          </button>
+        `;
+        container.appendChild(item);
+
+        const btn = item.querySelector(`#claim-${q.id}`);
+        if (isDone && !isClaimed) {
+          btn.onclick = () => {
+            gameState.completedQuests[q.id] = true;
+            addCoins(q.rewardCoins);
+            addXP(q.rewardXP);
+            audio.playLevelUp();
+            renderQuestsUI();
+            showToast("Hadiah misi berhasil diklaim!", "🎁");
+          };
+        }
+      });
+    }
+
+    // Mode Guru (Teacher Mode)
+    document.getElementById('btn-teacher').onclick = () => {
+      document.getElementById('modal-teacher').classList.add('active');
+    };
+
+    function switchTeacherTab(tab) {
+      const isForm = tab === 'form';
+      document.getElementById('tab-btn-teacher-form').classList.toggle('active', isForm);
+      document.getElementById('tab-btn-teacher-json').classList.toggle('active', !isForm);
+      document.getElementById('teacher-tab-form').style.display = isForm ? 'block' : 'none';
+      document.getElementById('teacher-tab-json').style.display = !isForm ? 'block' : 'none';
+      if (!isForm) {
+        document.getElementById('teacher-json-area').value = JSON.stringify(gameState.curriculum, null, 2);
+      }
+    }
+
+    function saveCustomQuestion() {
+      const mapel = document.getElementById('teacher-mapel').value;
+      const question = document.getElementById('teacher-q').value.trim();
+      const opt0 = document.getElementById('teacher-opt0').value.trim();
+      const opt1 = document.getElementById('teacher-opt1').value.trim();
+      const opt2 = document.getElementById('teacher-opt2').value.trim();
+      const opt3 = document.getElementById('teacher-opt3').value.trim();
+      const correct = parseInt(document.getElementById('teacher-correct').value);
+      const explain = document.getElementById('teacher-explain').value.trim();
+
+      if (!question || !opt0 || !opt1 || !opt2 || !opt3 || !explain) {
+        showToast("Mohon lengkapi formulir soal dan pembahasan!", "⚠️");
+        return;
+      }
+
+      const newQ = {
+        q: question,
+        options: [opt0, opt1, opt2, opt3],
+        answer: correct,
+        explain: explain
+      };
+
+      if (!gameState.curriculum[mapel]) {
+        gameState.curriculum[mapel] = { ...defaultCurriculum[mapel] };
+      }
+      gameState.curriculum[mapel].quizzes.push(newQ);
+      saveState();
+
+      audio.playCorrect();
+      showToast("Soal berhasil ditambahkan ke bank soal kurikulum!", "📚");
+      closeModal('modal-teacher');
+
+      // Bersihkan formulir
+      document.getElementById('teacher-q').value = '';
+      document.getElementById('teacher-opt0').value = '';
+      document.getElementById('teacher-opt1').value = '';
+      document.getElementById('teacher-opt2').value = '';
+      document.getElementById('teacher-opt3').value = '';
+      document.getElementById('teacher-explain').value = '';
+    }
+
+    function exportCurriculumJSON() {
+      const jsonStr = JSON.stringify(gameState.curriculum, null, 2);
+      document.getElementById('teacher-json-area').value = jsonStr;
+      
+      const tempArea = document.createElement('textarea');
+      tempArea.value = jsonStr;
+      document.body.appendChild(tempArea);
+      tempArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempArea);
+      showToast("JSON kurikulum berhasil disalin ke clipboard!", "📋");
+    }
+
+    function importCurriculumJSON() {
+      const inputStr = document.getElementById('teacher-json-area').value;
+      try {
+        const parsed = JSON.parse(inputStr);
+        if (typeof parsed === 'object') {
+          gameState.curriculum = parsed;
+          saveState();
+          audio.playLevelUp();
+          showToast("Kurikulum JSON kustom berhasil diterapkan!", "🎉");
+          closeModal('modal-teacher');
+        }
+      } catch (err) {
+        showToast("Format JSON tidak valid!", "⚠️");
+      }
+    }
+
+    function updateHUD() {
+      document.getElementById('hud-name').innerText = gameState.name;
+      document.getElementById('hud-level').innerText = `LVL ${gameState.level}`;
+      document.getElementById('hud-coins').innerText = gameState.coins;
+
+      const pct = Math.min(100, Math.floor((gameState.xp / gameState.xpTarget) * 100));
+      document.getElementById('hud-xp-fill').style.width = `${pct}%`;
+    }
+
+    /* =====================================================================
+       10. MAIN ANIMATION LOOP & RESIZE HANDLER
+       ===================================================================== */
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const delta = Math.min(clock.getDelta(), 0.1);
+      const time = clock.getElapsedTime();
+
+      // Update Pemain & Kamera
+      updatePlayer(delta);
+      updateCamera();
+      checkProximity();
+
+      // Animasi Rotasi Kolektibel (Koin & Buku)
+      animatedCollectibles.forEach((item, idx) => {
+        item.mesh.rotation.z += 1.8 * delta;
+        item.mesh.position.y = item.basePos.y + Math.sin(time * 3 + idx) * 0.22;
+      });
+
+      // Animasi Tanda Seru NPC & Portal Pad Glow
+      npcs.forEach((npc, idx) => {
+        npc.exMesh.rotation.y = time * 2;
+        npc.exMesh.position.y = 3.15 + Math.sin(time * 3 + idx) * 0.14;
+      });
+
+      interactiveZones.forEach(z => {
+        if (z.type === 'building' && z.mesh) {
+          z.mesh.material.emissiveIntensity = 0.45 + Math.sin(time * 4) * 0.25;
+        }
+      });
+
+      // Simulasi Partikel Air Mancur Bertingkat
+      fountainDrops.forEach(d => {
+        d.mesh.position.x += d.velX;
+        d.mesh.position.z += d.velZ;
+        d.mesh.position.y += d.velY;
+        d.velY -= 0.005; // gravitasi air
+
+        if (d.mesh.position.y <= 1.25) {
+          d.mesh.position.set(0, d.startY, 0);
+          d.velY = 0.08 + Math.random() * 0.05;
+        }
+      });
+
+      // Update Minimap Radar Real-Time
+      updateMinimap();
+
+      renderer.render(scene, camera);
+    }
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    window.onload = function () {
+      loadSavedState();
+      applyOutfit(gameState.uniform);
+      applyAccessory(gameState.accessory);
+      applyHairColor(gameState.hairColor);
+      animate();
+    };
+  </script>
+</body>
+</html>
